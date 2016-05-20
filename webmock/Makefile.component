@@ -1,0 +1,29 @@
+include vars.mk
+
+ifdef IMAGE_PREFIX
+IMAGE=$(IMAGE_PREFIX)/$(COMPONENT):$(BUILD_TAG)
+else
+IMAGE=$(COMPONENT):$(BUILD_TAG)
+endif
+
+pull:
+	docker pull $(IMAGE)
+
+build:
+	docker build --rm -t $(IMAGE) .
+
+build-pull:
+	docker build --pull --rm -t $(IMAGE) .
+
+clean-containers:
+	docker rm -f $$(docker ps --all -f name=$(COMPONENT);status=exited)
+
+clean-images:
+	docker rmi -f $$(docker images -q $(IMAGE))
+
+clean-all: clean-containers clean-images
+
+push:
+	docker tag $(IMAGE) $(PLATFORM_REGISTRY)/$(IMAGE)
+	docker push $(PLATFORM_REGISTRY)/$(IMAGE)
+
