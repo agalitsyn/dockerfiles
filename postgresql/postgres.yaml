@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    name: postgres
+spec:
+  ports:
+    - port: 5432
+  selector:
+    name: postgres
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: postgres
+  labels:
+    name: postgres
+spec:
+  template:
+    metadata:
+      labels:
+        name: postgres
+    spec:
+      nodeSelector:
+        name: postgres
+      containers:
+        - name: postgres
+          image: postgres:9.4
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: pg-data
+      volumes:
+        - name: pg-data
+          emptyDir: {}
+      hostNetwork: true
